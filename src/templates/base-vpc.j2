@@ -6,31 +6,26 @@ from diagrams.k8s.rbac import User
 
 
 with Diagram("{{ env_name }}", outformat="png", direction="TB"):
-  with Cluster("AWS Cloud"):
+  with Cluster("{{ aws_acc_name }}"):
     with Cluster("VPC Amazon EKS"):
        ekscp = EKS("EKS Control plane")
-    with Cluster("VPC Cloud environment"):
-      with Cluster("Availability Zone 1"):
+    with Cluster("VPC"):
+      with Cluster("AZ#1"):
         with Cluster("Public Subnet"):
            nat = NATGateway("NAT GATEWAY")
-           eniavz1 = VPCElasticNetworkInterface("EKS Elastic Network Interface")
-           ec2pubavz1 = EC2Instance("EKS Worker Node")
+           eniavz1 = VPCElasticNetworkInterface("EKS Network Interface")
+           ec2pubavz1 = EC2Instance("EKS Worker")
         with Cluster("Private Subnet"):
-           ec2privavz1 = EC2Instance("EKS Worker Node")
+           ec2privavz1 = EC2Instance("EKS Worker")
 
-      with Cluster("Availability Zone 2"):
+      with Cluster("AZ#2"):
         with Cluster("Public Subnet"):
-           ec2bastpubavz2 = EC2Instance("Bastion EC2 Instance")
-           eniavz2 = VPCElasticNetworkInterface("EKS Elastic Network Interface")
-           ec2pubavz2 = EC2Instance("EKS Worker Node")
+           ec2bastpubavz2 = EC2Instance("Bastion EC2")
+           eniavz2 = VPCElasticNetworkInterface("EKS Network Interface")
+           ec2pubavz2 = EC2Instance("EKS Worker")
         with Cluster("Private Subnet"):
-           ec2privavz2 = EC2Instance("EKS Worker Node")
+           ec2privavz2 = EC2Instance("EKS Worker")
       InternetGateway("Internet Gateway")
-
-    usr = User("Admin")
-    ECR("Elastic Container Registry")
-    iamserv = IAM("Identity Management")
-    additroles = [IAMRole("Role for EKS Cluster"), IAMRole("Role for EKS Node Groups")]
 
     eniavz1 - Edge(color="blue", style="dashed", label="EKS Cluster SG") - eniavz2
     pubngsg = ec2pubavz1 - Edge(color="orange", style="dashed", label="Public Node Group SG") - ec2pubavz2
@@ -39,5 +34,3 @@ with Diagram("{{ env_name }}", outformat="png", direction="TB"):
     nat >> ekscp
     eniavz1 >> ekscp << eniavz2
     ec2pubavz1 >> ekscp << ec2pubavz2
-    usr >> ec2bastpubavz2
-    iamserv >> additroles
